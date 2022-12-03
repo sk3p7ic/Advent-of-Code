@@ -13,13 +13,10 @@ for s in input:
 sims = [] # Stores chars found to be similar
 
 for sack in sacks:
-  matches = {} # Stores the matches that have been found
   for c in list(sack[0]):
-    # NOTE: An optimization that could be done would be to break after a match
-    # is found since there is only one match per string
-    if c in list(sack[1]) and c not in matches.keys():
+    if c in list(sack[1]):
       sims.append(c)
-      matches[c] = 0
+      break;
 
 
 sim_vals = [] # Stores the numerical value for each charcter
