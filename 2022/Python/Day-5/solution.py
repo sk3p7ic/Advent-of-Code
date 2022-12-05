@@ -1,19 +1,19 @@
 input = None
 
 with open("input.txt", "r") as f:
-    input = f.read().split('\n')
+    input = f.read().split("\n")
 
 # -- Part 1 ---
 # Find the number of stacks that there are
 num_stacks = 0
 stack_def_end_idx = 0
 for i, line in enumerate(input):
-    if "]" not in line: # Is this the line with the stack numbers?
-        num_stacks = int(line.strip().split(' ')[-1])
+    if "]" not in line:  # Is this the line with the stack numbers?
+        num_stacks = int(line.strip().split(" ")[-1])
         stack_def_end_idx = i
         break
 
-stacks = [[] for _ in range(int(num_stacks))] # Build the array of stacks
+stacks = [[] for _ in range(int(num_stacks))]  # Build the array of stacks
 
 # Build the stacks from the input
 for i in range(stack_def_end_idx):
@@ -27,7 +27,7 @@ for stack in stacks:
     stack.reverse()
 
 # Get the move instructions from the input
-instructions = [] # [(move count, source col, dest col), ...]
+instructions = []  # [(move count, source col, dest col), ...]
 for line in input:
     if "move" in line:
         parts = line.split(" ")
