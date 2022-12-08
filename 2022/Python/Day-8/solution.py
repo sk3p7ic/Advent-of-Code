@@ -8,11 +8,11 @@ with open("input.txt", "r") as f:
 input = list(map(lambda r: list(map(lambda t: int(t), list(r))), input))
 
 # --- Part 1 ---
-num_visible = 0 # Stores the total number of trees that are visible
+num_visible = 0  # Stores the total number of trees that are visible
 
 for y in range(len(input)):
     for x in range(len(input[0])):
-        tree = input[y][x] # This tree, stored for convienence
+        tree = input[y][x]  # This tree, stored for convienence
         # Check left
         left = input[y][:x]
         # If this is the far left or there is a leftward tree that is taller
@@ -38,14 +38,14 @@ for y in range(len(input)):
 print("D8P1: " + str(num_visible))
 
 # --- Part 2 ---
-max_score = 0 # Stores the max score found for the trees
+max_score = 0  # Stores the max score found for the trees
 
 for y in range(len(input)):
     for x in range(len(input[0])):
-        tree = input[y][x] # This tree, stored for convienence
+        tree = input[y][x]  # This tree, stored for convienence
         # Check left
         score_left = 0
-        left = reversed(input[y][:x]) # Reverse b/c searching to left of tree
+        left = reversed(input[y][:x])  # Reverse b/c searching to left of tree
         if left:
             for t in left:
                 score_left += 1
@@ -53,7 +53,7 @@ for y in range(len(input)):
                     break
         # Check right
         score_right = 0
-        right = input[y][x + 1 :] # Normal b/c searching to right
+        right = input[y][x + 1 :]  # Normal b/c searching to right
         if right:
             for t in right:
                 score_right += 1
