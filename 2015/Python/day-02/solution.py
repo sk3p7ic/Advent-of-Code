@@ -2,7 +2,9 @@ with open("input.txt", "r") as f:
     data = f.read().strip().split("\n")
 
 # --- Part 1 ---
-dimens = [(int(d[0]), int(d[1]), int(d[2])) for d in list(map(lambda d: d.split("x"), data))]
+dimens = [
+    (int(d[0]), int(d[1]), int(d[2])) for d in list(map(lambda d: d.split("x"), data))
+]
 total = 0
 for d in dimens:
     l, h, w = d
