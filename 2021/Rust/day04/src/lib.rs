@@ -21,33 +21,22 @@ impl BingoBoard {
         Some(Self{nums})
     }
 
-    pub fn play(self, number: u8) -> Self {
-        for mut n in self.nums {
-            if n.value == number {
-                n.called = true;
-            }
-        }
-        self
-    }
-
     pub fn n_to_win(&mut self, calls: &Vec<u8>) -> usize {
         let mut n_to_win_count = 0;
         for c in calls {
             n_to_win_count += 1;
-            let mut idx = 0;
-            for mut n in self.nums {
+            for i in 0..self.nums.len() {
+                let mut n = self.nums[i];
                 if n.value == *c {
-                    //n.called = true;
-                    n = BingoValue{value: n.value, called: true};
+                    n.called = true;
+                    //n = BingoValue{value: n.value, called: true};
                 }
-                self.nums[idx] = n;
-                idx += 1;
+                self.nums[i] = n;
             }
             if self.is_winner() {
                 break;
             }
         }
-        dbg!(self.nums);
         return n_to_win_count;
     }
 
@@ -86,32 +75,9 @@ pub fn process_p1(input: &str) -> u16 {
     let parsed = parse_input(input);
     let called_nums = parsed.0;
     let mut boards = parsed.1;
-    //let mut winning_board: Option<&BingoBoard> = None;
-    //let mut winning_number = 0;
-    //for cn in called_nums {
-    //    boards = boards.iter()
-    //        .map(|b| b.play(cn))
-    //        .collect();
-    //    dbg!(&boards);
-    //    if boards.iter().any(|b| b.is_winner()) {
-    //        winning_board = Some(boards.iter_mut()
-    //            .find(|b| b.is_winner())
-    //            .expect("there to be a winning board"));
-    //        winning_number = cn;
-    //        break;
-    //    }
-    //}
-    //match winning_board {
-    //    Some(b) => b.nums.iter()
-    //        .filter(|n| !n.called)
-    //        .map(|n| u16::from(n.value))
-    //        .sum::<u16>() * winning_number as u16,
-    //    None => 0
-    //}
     let win_mins = boards.iter_mut()
         .map(|b| b.n_to_win(&called_nums))
         .collect::<Vec<usize>>();
-    dbg!(&win_mins);
     let mut min_index = 0;
     let mut curr_idx = 0;
     let mut curr_min = usize::MAX;
@@ -122,9 +88,36 @@ pub fn process_p1(input: &str) -> u16 {
         }
         curr_idx += 1;
     }
-    dbg!(min_index);
     let winning_board = boards.get(min_index);
-    let winning_number = called_nums.get(min_index).expect("number to exist");
+    let winning_number = called_nums.get(curr_min - 1).expect("number to exist");
+    match winning_board {
+        Some(b) => b.nums.iter()
+            .filter(|n| !n.called)
+            .map(|n| u16::from(n.value))
+            .sum::<u16>() * *winning_number as u16,
+        None => 0
+    }
+}
+
+pub fn process_p2(input: &str) -> u16 {
+    let parsed = parse_input(input);
+    let called_nums = parsed.0;
+    let mut boards = parsed.1;
+    let win_maxs = boards.iter_mut()
+        .map(|b| b.n_to_win(&called_nums))
+        .collect::<Vec<usize>>();
+    let mut max_index = 0;
+    let mut curr_idx = 0;
+    let mut curr_max = usize::MIN;
+    for wm in win_maxs {
+        if wm > curr_max {
+            curr_max = wm;
+            max_index = curr_idx;
+        }
+        curr_idx += 1;
+    }
+    let winning_board = boards.get(max_index);
+    let winning_number = called_nums.get(curr_max - 1).expect("number to exist");
     match winning_board {
         Some(b) => b.nums.iter()
             .filter(|n| !n.called)
@@ -179,5 +172,10 @@ mod tests {
     #[test]
     fn p1_works() {
         assert_eq!(process_p1(&SAMPLE), 4512);
+    }
+
+    #[test]
+    fn p2_works() {
+        assert_eq!(process_p2(&SAMPLE), 1924);
     }
 }
