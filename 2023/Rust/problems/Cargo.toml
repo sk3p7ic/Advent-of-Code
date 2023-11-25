@@ -1,0 +1,9 @@
+[package]
+name = "aoc2023"
+version = "0.1.0"
+authors = ["Joshua Ibrom <joshuaibrom@gmail.com>"]
+edition = "2021"
+
+[[bin]]
+name = "day01"
+path = "src/day01.rs"
