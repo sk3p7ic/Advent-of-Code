@@ -138,21 +138,23 @@ fn process_p2(input: &str) -> u32 {
             are_adj.push(n.clone());
         }
     }
-    are_adj.iter_mut().for_each(|n| n.find_gear_pos(&mtx));
-    let mut samesies: Vec<u32> = Vec::new();
-    let mut last: MtxNum = are_adj[0].clone();
-    for (i, n) in are_adj.into_iter().enumerate() {
-        if i == 0 { continue; }
-        if let Some(last_pos) = last.gear_pos {
-            if let Some(curr_pos) = n.gear_pos {
-                if last_pos == curr_pos {
-                    samesies.push(last.v * n.v);
-                }
+    let mut gear_positions: Vec<(usize, usize)> = Vec::new();
+    for (i, r) in mtx.iter().enumerate() {
+        for (j, c) in r.iter().enumerate() {
+            if *c == '*' {
+                gear_positions.push((i, j));
             }
         }
-        last = n.clone();
     }
-    samesies.into_iter().sum()
+    are_adj.iter_mut().for_each(|n| n.find_gear_pos(&mtx));
+    let ratios = gear_positions.into_iter()
+        .map(|p| are_adj.iter()
+            .filter(|&n| n.gear_pos.unwrap_or((usize::MAX, usize::MAX)) == p)
+            .collect::<Vec<&MtxNum>>())
+        .filter(|v| v.len() == 2)
+        .map(|v| v.iter().map(|n| n.v).product())
+        .collect::<Vec<u32>>();
+    ratios.into_iter().sum()
 }
 
 
