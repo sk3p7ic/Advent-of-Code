@@ -3,21 +3,16 @@ fn get_cards(input: &str) -> Vec<Vec<u16>> {
         .map(|line| line.split_once(": ").expect("line to be valid").1)
         .map(|line| line.split_once(" | ").expect("line to have both parts"))
         .map(|line| (
-            line.0.split(" ")
-                .map(|v| v.chars()
-                    .filter(|c| c.is_digit(10))
-                    .collect::<String>().parse::<i8>().unwrap_or(-1))
+            line.0.split_ascii_whitespace()
+                .map(|v| v.parse::<u16>().expect("to be a digit"))
                 .collect::<Vec<_>>(),
-            line.1.split(" ")
-                .map(|v| v.chars()
-                    .filter(|c| c.is_digit(10))
-                    .collect::<String>().parse::<i8>().unwrap_or(-1))
+            line.1.split_ascii_whitespace()
+                .map(|v| v.parse::<u16>().expect("to be a digit"))
                 .collect::<Vec<_>>()))
-        .map(|(v1, v2)| v1.iter()
+        .map(|(v1, v2)| v1.iter() // I could explore HashSet, but nah.
             .filter(|n| v2.contains(&n))
             .map(|v| v.clone())
-            .collect::<Vec<i8>>())
-        .map(|v| v.iter().filter(|&n| *n >= 0).map(|n| *n as u16).collect::<Vec<u16>>())
+            .collect::<Vec<u16>>())
         .collect()
 }
 
