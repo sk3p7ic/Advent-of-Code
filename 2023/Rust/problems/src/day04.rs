@@ -42,8 +42,6 @@ fn process_p2(input: &str) -> usize {
             }
         }
     }
-    //dbg!(&cards);
-    //dbg!(&card_counts);
     card_counts.into_iter().sum()
 }
 
