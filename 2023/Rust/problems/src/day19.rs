@@ -13,6 +13,7 @@ impl std::str::FromStr for Rating {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut this = Self{ x: 0, m: 0, a: 0, s: 0};
+        let mut err: Option<String> = None;
         s.trim_matches(|c| c == '{' || c == '}').split(",")
             .map(|assignment| assignment.split_once("=").expect("to be valid assignment"))
             .for_each(|(v, n)| {match v {
@@ -20,8 +21,11 @@ impl std::str::FromStr for Rating {
                 "m" => this.m = n.parse().expect("to be valid m number"),
                 "a" => this.a = n.parse().expect("to be valid a number"),
                 "s" => this.s = n.parse().expect("to be valid s number"),
-                _ => {}
+                _ => { err = Some(format!("Attempted to assign '{}' to token '{}'.", n, v)); }
             }});
+        if let Some(e) = err {
+            return Err(e);
+        }
         Ok(this)
     }
 }
@@ -36,7 +40,6 @@ enum Comparison { LessThan((String, usize)), GreaterThan((String, usize)) }
 enum WorkflowItem {
     Comparable((Comparison, Resolution)),
     Resolvable(Resolution),
-    Forwardable((String, Resolution))
 }
 
 #[derive(Debug)]
@@ -61,9 +64,10 @@ impl std::str::FromStr for Workflow {
                     val => Resolution::Forward(val.to_string())
                 };
                 let (v, n) = left.split_at(1);
-                let is_lt = match n.chars().nth(1).expect("char to exist") {
+                let is_lt = match n.chars().next().expect("char to exist") {
                     '<' => true,
-                    _ => false
+                    '>' => false,
+                    c => panic!("{} -- {} ({})", opr, c, n)
                 };
                 let n = n.trim_matches(|c| c == '<' || c == '>').parse().expect("to be valid number");
                 let comp = match is_lt {
@@ -76,7 +80,7 @@ impl std::str::FromStr for Workflow {
                 actions.push(match this_op.as_str() {
                     "A" => WorkflowItem::Resolvable(Resolution::Accept),
                     "R" => WorkflowItem::Resolvable(Resolution::Reject),
-                    val => WorkflowItem::Forwardable((val.to_string(), Resolution::Forward(val.to_string())))
+                    val => WorkflowItem::Resolvable(Resolution::Forward(val.to_string()))
                 });
             }
         }
