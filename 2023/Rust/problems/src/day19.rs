@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Rating {
     x: usize,
     m: usize,
@@ -30,11 +30,36 @@ impl std::str::FromStr for Rating {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum Resolution { Accept, Reject, Forward(String) }
 
 #[derive(Debug)]
 enum Comparison { LessThan((String, usize)), GreaterThan((String, usize)) }
+
+impl Comparison {
+    fn compare(&self, rating: &Rating) -> bool {
+        match self {
+            Self::LessThan((s, n)) => {
+                match s.as_str() {
+                    "x" => &rating.x < n,
+                    "m" => &rating.m < n,
+                    "a" => &rating.a < n,
+                    "s" => &rating.s < n,
+                    _ => unreachable!()
+                }
+            },
+            Self::GreaterThan((s, n)) => {
+                match s.as_str() {
+                    "x" => &rating.x > n,
+                    "m" => &rating.m > n,
+                    "a" => &rating.a > n,
+                    "s" => &rating.s > n,
+                    _ => unreachable!()
+                }
+            },
+        }
+    }
+}
 
 #[derive(Debug)]
 enum WorkflowItem {
@@ -88,6 +113,24 @@ impl std::str::FromStr for Workflow {
     }
 }
 
+impl Workflow {
+    fn apply(&self, rating: &Rating) -> &Resolution {
+        for act in self.actions.iter() {
+            let res_opt = match act {
+                WorkflowItem::Comparable((cmp, res)) => match cmp.compare(rating) {
+                    true => Some(res),
+                    false => None
+                }
+                WorkflowItem::Resolvable(res) => Some(res)
+            };
+            if let Some(res) = res_opt {
+                return res;
+            }
+        }
+        unreachable!();
+    }
+}
+
 #[derive(Debug)]
 struct PartsSystem {
     workflows: HashMap<String, Workflow>,
@@ -113,9 +156,39 @@ impl std::str::FromStr for PartsSystem {
     }
 }
 
+impl PartsSystem {
+    fn trace(&self) -> usize {
+        let mut acc_rej: Vec<bool> = Vec::new();
+        for rating in self.ratings.iter() {
+            let mut resolution: &Resolution;
+            let mut res_string = "in".to_string();
+            loop {
+                let wf = self.workflows.get(&res_string).expect("workflow to exist");
+                resolution = wf.apply(rating);
+                match resolution.clone() {
+                    Resolution::Accept | Resolution::Reject => break,
+                    Resolution::Forward(s) => { res_string = s; }
+                }
+            }
+            match resolution {
+                Resolution::Accept => acc_rej.push(true),
+                _ => acc_rej.push(false)
+            }
+        }
+        acc_rej.into_iter().enumerate()
+            .map(|(i, b)| match b {
+                true => self.ratings[i].clone(),
+                false => Rating { x: 0, m: 0, a: 0, s: 0 }
+            })
+            .map(|r| r.x + r.m + r.a + r.s)
+            .sum()
+    }
+}
+
 fn main() {
     let input = std::fs::read_to_string("./inputs/day19.in.txt").expect("file to exist");
-    println!("Input: {}", input);
+    let parts = input.parse::<PartsSystem>().expect("to be a valid system");
+    println!("[2023] D19P01: {}", parts.trace());
 }
 
 #[cfg(test)]
@@ -143,7 +216,6 @@ hdj{m>838:A,pv}
     #[test]
     fn p1_works() {
         let parts: PartsSystem = SAMPLE.parse().expect("to be valid system");
-        dbg!(parts);
-        assert_eq!(1, 0);
+        assert_eq!(19114, parts.trace());
     }
 }
