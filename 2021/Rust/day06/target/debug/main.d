@@ -1,0 +1,1 @@
+/Users/sk3p7ic/Coding/Advent-of-Code/2021/Rust/day06/target/debug/main: /Users/sk3p7ic/Coding/Advent-of-Code/2021/Rust/day06/src/bin/main.rs /Users/sk3p7ic/Coding/Advent-of-Code/2021/Rust/day06/src/lib.rs

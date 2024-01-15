@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::convert::TryInto;
 
 #[derive(Debug)]
@@ -38,10 +39,29 @@ enum HandKind {
 }
 
 impl HandKind {
-    fn from_hand(hand: &Hand) -> Self {
+    fn from_hand(hand: &Hand, shadow: bool) -> Self {
         let mut values = hand.hand.iter()
             .map(|c| c.to_strength())
             .collect::<Vec<u8>>();
+        if shadow {
+            let mut hm: HashMap<u8, usize> = HashMap::new();
+            for v in &values {
+                hm.entry(v.clone()).and_modify(|e| {*e + 1;}).or_insert(1);
+            }
+            let mut max_v = 0;
+            let mut max_c = 0;
+            for (v, c) in hm.into_iter() {
+                if max_c.max(c) != max_c {
+                    max_v = v;
+                    max_c = c;
+                }
+            }
+            for (i, v) in values.clone().iter().enumerate() {
+                if v == &Card::Jack.to_strength() {
+                    values[i] = max_c as u8;
+                }
+            }
+        }
         values.sort();
         let grouped = (2..=14).map(|n| values.iter()
                 .filter(|&v| v == &n)
@@ -130,7 +150,31 @@ fn parse_input(input: &str) -> Vec<Hand> {
 
 fn process_p1(input: &str) -> u64 {
     let hands = parse_input(&input);
-    let mut kinds = hands.iter().map(|h| (h, HandKind::from_hand(h))).collect::<Vec<_>>();
+    let mut kinds = hands.iter().map(|h| (h, HandKind::from_hand(h, false))).collect::<Vec<_>>();
+    kinds.sort_by(|a, b| b.1.to_strength().partial_cmp(&a.1.to_strength())
+        .expect("to be orderable"));
+    let mut kind_groups = HandKind::strength_range().map(|s|
+        kinds.iter().filter(|&k| k.1.to_strength() == s).collect::<Vec<_>>())
+        .filter(|g| g.len() > 0)
+        .collect::<Vec<Vec<_>>>();
+    kind_groups.sort_by(|a, b| b[0].1.to_strength().partial_cmp(&a[0].1.to_strength()).expect("to sort"));
+    for (i, kg) in kind_groups.clone().iter().enumerate() {
+        let mut kgc = kg.clone();
+        kgc.sort_by(|a, b| b.0.to_sortable_key().partial_cmp(&a.0.to_sortable_key())
+            .expect("group to be sortable"));
+        kind_groups[i] = kgc;
+    }
+    let all_kinds = kind_groups.into_iter().flatten().collect::<Vec<_>>();
+    let mut result = 0;
+    for (i, k) in all_kinds.clone().into_iter().enumerate() {
+        result += (all_kinds.len() - i) as u64 * k.0.bid as u64;
+    }
+    result
+}
+
+fn process_p2(input: &str) -> u64 {
+    let hands = parse_input(&input);
+    let mut kinds = hands.iter().map(|h| (h, HandKind::from_hand(h, true))).collect::<Vec<_>>();
     kinds.sort_by(|a, b| b.1.to_strength().partial_cmp(&a.1.to_strength())
         .expect("to be orderable"));
     let mut kind_groups = HandKind::strength_range().map(|s|
@@ -170,5 +214,10 @@ QQQJA 483";
     #[test]
     fn p1_works() {
         assert_eq!(6440, process_p1(&SAMPLE));
+    }
+
+    #[test]
+    fn p2_works() {
+        assert_eq!(5905, process_p2(&SAMPLE));
     }
 }
