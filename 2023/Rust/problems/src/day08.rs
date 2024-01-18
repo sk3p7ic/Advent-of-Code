@@ -89,6 +89,34 @@ fn traverse(instrs: &Instructions) -> usize {
     dir_ptr
 }
 
+fn traverse_until<'a>(instrs: &'a Instructions, mut curr: &'a Node, sentinel: char) -> usize {
+    let mut dir_ptr = 0;
+    //dbg!(&curr);
+    while curr.this.chars().last().expect("to have last char").ne(&sentinel) {
+        let dir = instrs.commands[dir_ptr % instrs.commands.len()];
+        match dir {
+            Command::Left => {
+                let nxt = instrs.nodes.get(&curr.left).expect("left node to exist");
+                curr = nxt;
+            },
+            Command::Right => {
+                let nxt = instrs.nodes.get(&curr.right).expect("right node to exist");
+                curr = nxt;
+            }
+        }
+        dir_ptr += 1;
+    }
+    dir_ptr
+}
+
+fn find_all_zs(instrs: &Instructions) -> u128 {
+    let start_labels = instrs.find_starts();
+    start_labels.into_iter()
+        .map(|lbl| instrs.nodes.get(&lbl).expect("node to exist"))
+        .map(|node| traverse_until(instrs, node, 'Z') as u128)
+        .product()
+}
+
 fn multi_traverse(instrs: &Instructions) -> usize {
     let start_labels = instrs.find_starts();
     let mut currs = start_labels.into_iter()
@@ -123,7 +151,8 @@ fn main() {
     let input = std::fs::read_to_string("./inputs/day08.in.txt").expect("file to exist");
     let instructions = input.parse().expect("to be valid instructions");
     println!("[2023] D08P01: {}", traverse(&instructions));
-    println!("[2023] D08P02: {}", multi_traverse(&instructions));
+    //println!("[2023] D08P02: {}", multi_traverse(&instructions));
+    println!("[2023] D08P02: {}", find_all_zs(&instructions));
 }
 
 #[cfg(test)]
@@ -175,6 +204,7 @@ XXX = (XXX, XXX)";
     fn p2_works() {
         let instrs = SAMPLE_P2.parse::<Instructions>().expect("to be valid instructions");
         dbg!(&instrs);
-        assert_eq!(6, multi_traverse(&instrs));
+        //assert_eq!(6, multi_traverse(&instrs));
+        assert_eq!(6, find_all_zs(&instrs));
     }
 }
