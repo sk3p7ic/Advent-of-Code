@@ -4,5 +4,8 @@ day01:
 day02:
 	gcc -o day02 day02.c
 	./day02 ../.inputs/day02.txt
+day03:
+	gcc -o day03 day03.c
+	./day03 ../.inputs/day03.txt
 
-.PHONY: day01 day02
+.PHONY: day01 day02 day03
