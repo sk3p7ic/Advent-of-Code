@@ -53,9 +53,33 @@ int processP1(const char *input) {
         tok = strtok(NULL, "\n");
         nIter++;
     }
-    printf("Performed %ld iters.\n", nIter);
     free(toParse);
     return nGood;
+}
+
+int processP2(const char *filename) {
+    size_t cmdSize = strlen(filename) + 64;
+    char *cmd = malloc(cmdSize);
+    if (cmd == NULL) {
+        perror("Could not allocate a command buffer.");
+        exit(EXIT_FAILURE);
+    }
+    char *matchDoubleChars = "/usr/bin/grep \"\\(..\\).*\\1\"";
+    char *matchEntrappedChars = "/usr/bin/grep \"\\(.\\).\\1\"";
+    sprintf(cmd,
+        "/bin/cat %s | %s | %s | /usr/bin/wc -l",
+        filename,
+        matchDoubleChars,
+        matchEntrappedChars
+    );
+    FILE *resFp = popen(cmd, "r");
+    if (resFp == NULL) {
+        perror("Error when running commands for part 2.");
+        exit(EXIT_FAILURE);
+    }
+    char resStr[16];
+    fgets(resStr, sizeof(resStr), resFp);
+    return atoi(resStr);
 }
 
 void readFile(const char *filename, char *buf);
@@ -78,6 +102,7 @@ int main(int argc, char *argv[]) {
     char *input = malloc(1000 * 17);
     readFile(argv[1], input);
     printf("D05P1: %d\n", processP1(input));
+    printf("D05P2: %d\n", processP2(argv[1]));
     free(input);
 }
 
