@@ -1,4 +1,4 @@
-.PHONY: day01 day02 day03 day05 day06
+.PHONY: day01 day02 day03 day05 day06 day07
 
 day01:
 	gcc -o day01 day01.c
@@ -15,3 +15,6 @@ day05:
 day06:
 	gcc -o day06 day06.c
 	./day06 ../.inputs/day06.txt
+day07:
+	gcc -o day07 day07.c
+	./day07 ../.inputs/day07.txt
