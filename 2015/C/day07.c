@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -97,6 +98,58 @@ int hashPos(Hasher h, char* s) {
     return h.v[hash(s)];
 }
 
+/*
+* Code borrowed / adapted from
+* https://www.geeksforgeeks.org/prims-minimum-spanning-tree-mst-greedy-algo-5/
+*/
+
+size_t minKeyValueIdx(int keys[], int mst[]) {
+    int min = INT_MAX;
+    int min_idx = 0;
+
+    for (size_t i = 0; i < n_vertices; ++i) {
+        if (mst[i] == 0 && keys[i] < min) {
+            min = keys[i];
+            min_idx = i;
+        }
+    }
+    return min_idx;
+}
+
+int primMST(int g[n_vertices][n_vertices]) {
+    int parent[n_vertices];
+    int keys[n_vertices];
+    int mst[n_vertices];
+
+    for (size_t i = 0; i < n_vertices; ++i) {
+        keys[i] = INT_MAX;
+        mst[i] = 0;
+    }
+    keys[0] = 0;
+    parent[0] = -1;
+    for (int c = 0; c < n_vertices - 1; ++c) {
+        int u = minKeyValueIdx(keys, mst);
+        mst[u] = 1;
+        for (size_t v = 0; v < n_vertices; ++v) {
+            if (g[u][v] && !mst[v] && g[u][v] < keys[v]) {
+                parent[v] = u;
+                keys[v] = g[u][v];
+            }
+        }
+    }
+    int distance = 0;
+    printf("Path:\n");
+    for (size_t i = 1; i < n_vertices; ++i) {
+        printf("    %d - %ld    %d\n", parent[i], i, g[i][parent[i]]);
+        distance += g[parent[i]][i];
+    }
+    return distance;
+}
+
+/*
+* End borrowed / adapted code.
+*/
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Incorrect number of arguments given (%d).\n", argc);
@@ -132,6 +185,8 @@ int main(int argc, char *argv[]) {
             }
             printf("\n");
         }
+        int distance = primMST(edges);
+        printf("P1 Test: %d\n", distance);
     }
     char* input = malloc(1024);
     expect(input, "Could not create buffer for reading input file.");
@@ -163,6 +218,7 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
+    printf("D07P1: %d\n", primMST(edges));
     return 0;
 }
 
