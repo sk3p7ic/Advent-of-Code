@@ -1,0 +1,4 @@
+(executable
+ (public_name d12)
+ (name main)
+ (libraries OCaml str))
